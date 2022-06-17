@@ -44,7 +44,7 @@ echo -e "LD_RUN_PATH: \n $LD_RUN_PATH \n"
 
 # The user has chosen one path for all dependencies to lie in
 # structure will look like 
-# ~/xfitter_dependencies/
+# ../xfitter_dependencies/
 #       hoppet/
 #       apfel/
 #       apfelgrid/
@@ -52,7 +52,7 @@ echo -e "LD_RUN_PATH: \n $LD_RUN_PATH \n"
 #       lhapdf/
 #       applgrid/
 
-echo -n 'Enter path for xfitter dependencies installation location: '
+echo -n 'Enter path for xfitter dependencies installation location (Write full path): '
 read dep_path
 
 if [ -d $dep_path ]
