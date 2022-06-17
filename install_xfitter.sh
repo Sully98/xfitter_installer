@@ -126,17 +126,16 @@ make install
 cd $dep_path
 #------------------------#
 # install APPLGRID 
-echo "Installing APPLGRID 1.4.70"
+echo "Installing APPLGRID 1.5.46"
 
-wget --no-check-certificate https://applgrid.hepforge.org/downloads?f=applgrid-1.4.70.tgz -O applgrid-1.4.70.tgz
-tar -xvzf applgrid-1.4.70.tgz
-rm applgrid-1.4.70.tgz
-cd applgrid-1.4.70
+wget --no-check-certificate https://applgrid.hepforge.org/downloads?f=applgrid-1.5.46.tgz -O applgrid-1.5.46.tgz
+tar -xvzf applgrid-1.5.46.tgz
+rm applgrid-1.5.46.tgz
+cd applgrid-1.5.46
 
 echo "configuring APPLGRID to $config_path"
 
 ./configure --prefix=$config_path
-make clean
 make -j
 make install
 
@@ -170,6 +169,9 @@ then
         wget http://lhapdfsets.web.cern.ch/lhapdfsets/current/$line.tar.gz -O- | tar xz -C $config_path/share/LHAPDF
     done
 fi
+
+echo "Grabbing NNPDF30_nlo_as_0118, the pdf used in the example"
+wget http://lhapdfsets.web.cern.ch/lhapdfsets/current/NNPDF30_nlo_as_0118.tar.gz -O- | tar xz -C $config_path/share/LHAPDF
 
 if [ -d xfitter ]
 then 
