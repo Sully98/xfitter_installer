@@ -145,7 +145,7 @@ cd $dep_path
 echo "Installing APFELGRID"
 
 git clone https://github.com/nhartland/APFELgrid.git
-cd apfel
+cd APFELgrid
 
 echo "configuring APFELGRID to $config_path"
 
