@@ -2,6 +2,8 @@
 
 start_dir=$(pwd)
 
+
+source ./global_reqs.sh
 echo -n "All prexisting installations of xfitter dependencies in the directory specified will be overwritten do you wish to continue? (y/n): "
 read overwriter
 if [ $overwriter = 'n' ]
@@ -9,24 +11,13 @@ then
     exit
 fi
 
-# File to install xfitter and dependencies to the user's liking
-echo -n "Are you working on SMU's M2 SuperComputer? (y/n): "
-read m2
-if [ $m2='y' ]
-then
-    module purge
-    module load gcc-6.3 spack root cmake gsl yaml-cpp openblas zlib libpng texlive armadillo
-    module list
-else
-    echo "Make sure you have the libraries installed such as cmake, zlib, etc..."
-fi
 
 # This will be where the the code will run ./configure --prefix=$config_path
 echo -n 'Where will your software be configured? (Write full path): '
 read config_path
 
 if [ -d $config_path ]
-then 
+then
     echo "config path exits"
 else
     echo "making $config_path"
@@ -42,8 +33,9 @@ echo -e "\n PATH: \n $PATH \n"
 echo -e "LD_LIBRARY_PATH: \n $LD_LIBRARY_PATH \n"
 echo -e "LD_RUN_PATH: \n $LD_RUN_PATH \n"
 
+
 # The user has chosen one path for all dependencies to lie in
-# structure will look like 
+# structure will look like
 # ../xfitter_dependencies/
 #       hoppet/
 #       apfel/
@@ -56,7 +48,7 @@ echo -n 'Enter path for xfitter dependencies installation location (Write full p
 read dep_path
 
 if [ -d $dep_path ]
-then 
+then
     echo "dependencies path exits"
 else
     echo "making $dep_path"
@@ -74,7 +66,7 @@ echo "configuring HOPPET to $config_path"
 
 ./configure --prefix=$config_path
 make -j
-make check 
+make check
 make install
 
 cd $dep_path
@@ -125,7 +117,7 @@ make install
 
 cd $dep_path
 #------------------------#
-# install APPLGRID 
+# install APPLGRID
 echo "Installing APPLGRID 1.5.46"
 
 wget --no-check-certificate https://applgrid.hepforge.org/downloads?f=applgrid-1.5.46.tgz -O applgrid-1.5.46.tgz
@@ -141,7 +133,7 @@ make install
 
 cd $dep_path
 #------------------------#
-# install APFELGRID 
+# install APFELGRID
 echo "Installing APFELGRID"
 
 git clone https://github.com/nhartland/APFELgrid.git
@@ -149,8 +141,48 @@ cd APFELgrid
 
 echo "configuring APFELGRID to $config_path"
 
-./setup.sh
-make install
+####################### Prefixes #######################
+
+if ! [ -x "$(command -v applgrid-config)" ]; then
+    echo "APPLgrid config file not found in path!"
+    echo "aborting installation"
+    exit -1
+fi
+
+if ! [ -x "$(command -v apfel-config)" ]; then
+    echo "APFEL config file not found in path!"
+    echo "aborting installation"
+    exit -1
+fi
+
+APPLVER=applgrid-$(applgrid-config --version)
+TARGET=$(applgrid-config --incdir)/appl_grid/
+PREFIX=$(apfel-config --prefix)
+
+####################### Header installation #######################
+
+echo "Detected APPLgrid version: " $APPLVER" .. supplementing with full headers ... "
+wget --no-check-certificate http://applgrid.hepforge.org/downloads/$APPLVER.tgz
+
+if [ ! -f "./"$APPLVER".tgz" ]; then
+    echo "APPLgrid tgz failed to download!"
+    exit -1
+fi
+
+tar -xzf ./$APPLVER.tgz
+cp "./"$APPLVER"/src/"*.h $TARGET
+rm $APPLVER.tgz
+rm -rf ./$APPLVER
+
+
+####################### Installation #######################
+echo
+echo "Headers supplemented, proceeding to installation in APFEL directory: "$PREFIX
+echo
+autoreconf -i
+./configure --prefix=$PREFIX
+make && make install
+
 
 cd $dep_path
 #------------------------#
@@ -159,12 +191,12 @@ cd $dep_path
 cd $start_dir
 
 echo -n "Download pdf sets from pdfsetlist.txt?: "
-read dwnld 
+read dwnld
 if [ $dwnld = 'y' ]
 then
 
     echo "downloading pdfsets"
-    cat pdfsetlist.txt | while read line 
+    cat pdfsetlist.txt | while read line
     do
         wget http://lhapdfsets.web.cern.ch/lhapdfsets/current/$line.tar.gz -O- | tar xz -C $config_path/share/LHAPDF
     done
@@ -174,7 +206,7 @@ echo "Grabbing NNPDF30_nlo_as_0118, the pdf used in the example"
 wget http://lhapdfsets.web.cern.ch/lhapdfsets/current/NNPDF30_nlo_as_0118.tar.gz -O- | tar xz -C $config_path/share/LHAPDF
 
 if [ -d xfitter ]
-then 
+then
     echo "xfitter is already installed"
     cd xfitter
     ./make.sh install
